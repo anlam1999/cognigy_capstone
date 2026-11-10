@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlpineBank — Online Banking</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<style>
+:root {
+  --forest:   #0d2010;
+  --pine:     #1a3d20;
+  --leaf:     #2d7a3a;
+  --bright:   #4caf62;
+  --bg:       #f2f5f2;
+  --surface:  #ffffff;
+  --border:   #dce8dc;
+  --fg:       #0f1f12;
+  --muted:    #5a7060;
+  --dim:      #9ab09e;
+  --positive: #1a7a3a;
+  --negative: #c0392b;
+  --warn:     #b56c0a;
+  --radius:   10px;
+  --shadow:   0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── NAV ─────────────────────────────────────────── */
+nav {
+  background: var(--forest);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  gap: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: 36px;
+  text-decoration: none;
+  color: #fff;
+}
+.nav-brand svg { flex-shrink: 0; }
+.nav-brand-name { font-size: 16px; font-weight: 700; letter-spacing: 0.04em; }
+.nav-brand-tag  { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.5); display: block; margin-top: -2px; }
+.nav-links { display: flex; gap: 2px; flex: 1; }
+.nav-link {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: color 0.12s, background 0.12s;
+  white-space: nowrap;
+}
+.nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); }
+.nav-link.active { color: var(--bright); }
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--pine);
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--bright);
+  cursor: pointer;
+}
+.demo-pill {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(76,175,98,0.2); color: var(--bright);
+  border: 1px solid rgba(76,175,98,0.35); border-radius: 20px;
+  padding: 3px 10px;
+}
+
+/* ── LAYOUT ───────────────────────────────────────── */
+.page { max-width: 1100px; margin: 0 auto; padding: 28px 20px 80px; }
+.greeting { margin-bottom: 24px; }
+.greeting h1 { font-size: 22px; font-weight: 600; }
+.greeting p  { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.date-badge  { font-size: 12px; color: var(--dim); float: right; margin-top: 4px; }
+
+/* ── ACCOUNT TILES ───────────────────────────────── */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.tile:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+.tile::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--leaf), var(--bright));
+}
+.tile.savings::before { background: linear-gradient(90deg, #1a6b8a, #2eaad4); }
+.tile.invest::before  { background: linear-gradient(90deg, #7a3d9a, #b06fd4); }
+.tile-type { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.tile-name { font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 12px; }
+.tile-bal  { font-size: 26px; font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tile-cur  { font-size: 13px; font-weight: 500; color: var(--muted); margin-right: 3px; }
+.tile-iban { font-size: 11px; color: var(--dim); margin-top: 8px; font-family: 'Courier New', monospace; letter-spacing: 0.04em; }
+.tile-deco {
+  position: absolute; right: 14px; bottom: 12px;
+  font-size: 28px; opacity: 0.07; pointer-events: none; user-select: none;
+}
+
+/* ── TWO-COL ──────────────────────────────────────── */
+.two-col { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+@media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } .tiles { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .tiles { grid-template-columns: 1fr; } nav .nav-links { display: none; } }
+
+/* ── CARD ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.card-hdr h2 { font-size: 14px; font-weight: 600; }
+.card-hdr a  { font-size: 12px; color: var(--leaf); text-decoration: none; font-weight: 500; }
+.card-hdr a:hover { text-decoration: underline; }
+
+/* ── TRANSACTIONS ─────────────────────────────────── */
+.txn-list { }
+.txn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.txn:last-child { border-bottom: none; }
+.txn:hover { background: var(--bg); }
+.txn-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.txn-info { flex: 1; min-width: 0; }
+.txn-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.txn-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.txn-amt  { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.txn-amt.pos { color: var(--positive); }
+.txn-amt.neg { color: var(--negative); }
+
+/* ── QUICK ACTIONS ────────────────────────────────── */
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+.action-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 14px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; font-family: inherit;
+  color: var(--fg); font-size: 12px; font-weight: 500;
+  transition: background 0.12s, border-color 0.12s;
+  text-align: center;
+}
+.action-btn:hover { background: #e8f0e8; border-color: var(--bright); color: var(--leaf); }
+.action-btn.aspen { border-color: var(--bright); color: var(--leaf); background: #edf7ee; }
+.action-btn.aspen:hover { background: #d8f0da; }
+.action-icon { font-size: 20px; }
+
+/* ── ASPEN PROMO ──────────────────────────────────── */
+.aspen-promo {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--pine) 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-top: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.aspen-promo::after {
+  content: "";
+  position: absolute;
+  right: -20px; bottom: -20px;
+  width: 100px; height: 100px;
+  background: rgba(76,175,98,0.1);
+  border-radius: 50%;
+}
+.aspen-promo h3 { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+.aspen-promo p  { font-size: 12px; color: rgba(255,255,255,0.65); margin-bottom: 14px; line-height: 1.5; }
+.aspen-btn {
+  background: var(--bright); color: var(--forest);
+  border: none; border-radius: 7px;
+  padding: 9px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.12s;
+}
+.aspen-btn:hover { background: #5ecb74; }
+
+/* ── VOICE CALL BUTTON ───────────────────────────── */
+.nav-call-btn {
+  background: var(--bright); color: var(--forest);
+  border: none; border-radius: 7px;
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; gap: 5px;
+  transition: background 0.12s; white-space: nowrap;
+}
+.nav-call-btn:hover { background: #5ecb74; }
+.call-panel {
+  background: linear-gradient(135deg, var(--forest) 0%, #0d3015 100%);
+  border: 1px solid rgba(76,175,98,0.3);
+  border-radius: var(--radius); padding: 16px 18px;
+  margin-top: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.call-panel h3 { font-size: 13px; font-weight: 700; color: #fff; }
+.call-panel p  { font-size: 11.5px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+.call-panel-btn {
+  background: var(--bright); color: var(--forest);
+  border: none; border-radius: 7px;
+  padding: 10px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.12s; display: flex; align-items: center; gap: 6px; justify-content: center;
+}
+.call-panel-btn:hover { background: #5ecb74; }
+
+/* ── FOOTER ───────────────────────────────────────── */
+footer {
+  background: var(--forest); color: rgba(255,255,255,0.4);
+  text-align: center; font-size: 11px; padding: 16px;
+  margin-top: 40px; letter-spacing: 0.03em;
+}
+footer strong { color: rgba(255,255,255,0.7); }
+
+/* ── MOUNTAIN DIVIDER ─────────────────────────────── */
+.mtn-divider { width: 100%; margin: 10px 0 24px; opacity: 0.35; }
+
+/* ── NOTICE BANNER ────────────────────────────────── */
+.notice {
+  background: #fffbea;
+  border: 1px solid #f0d060;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 12.5px;
+  color: #7a5a0a;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+      <polygon points="14,2 25,21 3,21" fill="#4caf62" opacity="0.85"/>
+      <polygon points="14,9 23,25 5,25" fill="#4caf62"/>
+      <rect x="12" y="25" width="4" height="3" fill="#4caf62" opacity="0.6"/>
+    </svg>
+    <div>
+      <div class="nav-brand-name">AlpineBank</div>
+      <div class="nav-brand-tag">Online Banking</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link active" href="#">Overview</a>
+    <a class="nav-link" href="#">Accounts</a>
+    <a class="nav-link" href="#">Payments</a>
+    <a class="nav-link" href="#">Cards</a>
+    <a class="nav-link" href="#">Documents</a>
+    <a class="nav-link" href="#">Help</a>
+  </div>
+  <div class="nav-right">
+    <span class="demo-pill">Demo</span>
+    <button class="nav-call-btn" onclick="startVoiceCall()" title="Call Aspen via browser microphone">
+      📞 Call Aspen
+    </button>
+    <div class="nav-avatar" title="Antoinette Lam">AL</div>
+  </div>
+</nav>
+
+<!-- MAIN PAGE -->
+<div class="page">
+
+  <div class="notice">
+    ⚡ Demo portal — <strong>Call Aspen</strong> via the green button (top right, requires microphone) or <strong>Chat</strong> (bottom right). Verify your identity, then ask to see your accounts on screen to trigger the xApp.
+  </div>
+
+  <div class="greeting">
+    <span class="date-badge">Monday, 10 November 2026</span>
+    <h1>Welcome back, Antoinette</h1>
+    <p>Your finances at a glance &nbsp;·&nbsp; Last login: today at 07:14</p>
+  </div>
+
+  <!-- ACCOUNT TILES -->
+  <div class="tiles">
+    <div class="tile">
+      <div class="tile-type">🏦 Current Account</div>
+      <div class="tile-name">AlpineBank Privatkonto</div>
+      <div class="tile-bal"><span class="tile-cur">CHF</span>2,847.50</div>
+      <div class="tile-iban">CH56 0483 5012 3456 7800 9 ••••</div>
+      <div class="tile-deco">💳</div>
+    </div>
+    <div class="tile savings">
+      <div class="tile-type">🌿 Savings Account</div>
+      <div class="tile-name">AlpineBank Sparkonto</div>
+      <div class="tile-bal"><span class="tile-cur">CHF</span>18,220.00</div>
+      <div class="tile-iban">CH56 0483 5099 8877 6600 1 ••••</div>
+      <div class="tile-deco">🏔️</div>
+    </div>
+    <div class="tile invest">
+      <div class="tile-type">📈 Investment Portfolio</div>
+      <div class="tile-name">AlpineBank Depot</div>
+      <div class="tile-bal"><span class="tile-cur">CHF</span>42,100.80</div>
+      <div class="tile-iban">Portfolio #CH-DEP-00291</div>
+      <div class="tile-deco">🌲</div>
+    </div>
+  </div>
+
+  <svg class="mtn-divider" viewBox="0 0 1000 32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <polygon points="0,32 100,10 200,24 350,4 480,20 620,2 760,18 880,8 1000,16 1000,32" fill="#1a3d20"/>
+    <polygon points="350,4 362,14 338,14" fill="#f2f5f2"/>
+    <polygon points="620,2 632,12 608,12" fill="#f2f5f2"/>
+    <g fill="#2d7a3a" opacity="0.4">
+      <polygon points="0,32 6,20 12,32"/>
+      <polygon points="14,32 20,18 26,32"/>
+      <polygon points="975,32 981,22 987,32"/>
+      <polygon points="988,32 994,20 1000,32"/>
+    </g>
+  </svg>
+
+  <!-- TWO COL -->
+  <div class="two-col">
+
+    <!-- LEFT: Transactions -->
+    <div class="card">
+      <div class="card-hdr">
+        <h2>Recent Transactions</h2>
+        <a href="#">View all</a>
+      </div>
+      <div class="txn-list">
+        <div class="txn">
+          <div class="txn-icon">🛒</div>
+          <div class="txn-info">
+            <div class="txn-name">COOP Supermarket Zürich HB</div>
+            <div class="txn-meta">Today · Current Account</div>
+          </div>
+          <div class="txn-amt neg">−CHF 47.80</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">💼</div>
+          <div class="txn-info">
+            <div class="txn-name">Salary — Deloitte AG</div>
+            <div class="txn-meta">01 Nov · Current Account</div>
+          </div>
+          <div class="txn-amt pos">+CHF 5,200.00</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">🚂</div>
+          <div class="txn-info">
+            <div class="txn-name">SBB CFF FFS — Rail ticket</div>
+            <div class="txn-meta">31 Oct · Current Account</div>
+          </div>
+          <div class="txn-amt neg">−CHF 28.40</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">☕</div>
+          <div class="txn-info">
+            <div class="txn-name">Café Sprüngli Bahnhofstrasse</div>
+            <div class="txn-meta">30 Oct · Current Account</div>
+          </div>
+          <div class="txn-amt neg">−CHF 12.50</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">🏥</div>
+          <div class="txn-info">
+            <div class="txn-name">Helsana Versicherungen AG</div>
+            <div class="txn-meta">28 Oct · Direct Debit</div>
+          </div>
+          <div class="txn-amt neg">−CHF 420.00</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">📦</div>
+          <div class="txn-info">
+            <div class="txn-name">Transfer to Sparkonto</div>
+            <div class="txn-meta">25 Oct · Internal transfer</div>
+          </div>
+          <div class="txn-amt neg">−CHF 500.00</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">⚡</div>
+          <div class="txn-info">
+            <div class="txn-name">EWZ — Elektrizitätswerk</div>
+            <div class="txn-meta">22 Oct · Direct Debit</div>
+          </div>
+          <div class="txn-amt neg">−CHF 89.00</div>
+        </div>
+        <div class="txn">
+          <div class="txn-icon">🏪</div>
+          <div class="txn-info">
+            <div class="txn-name">Migros Supermarkt</div>
+            <div class="txn-meta">20 Oct · Current Account</div>
+          </div>
+          <div class="txn-amt neg">−CHF 63.15</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Actions + Aspen promo -->
+    <div>
+      <div class="card">
+        <div class="card-hdr"><h2>Quick Actions</h2></div>
+        <div class="actions">
+          <button class="action-btn" onclick="openChat()">
+            <span class="action-icon">↗️</span>Transfer
+          </button>
+          <button class="action-btn" onclick="openChat()">
+            <span class="action-icon">💸</span>Pay Bill
+          </button>
+          <button class="action-btn" onclick="openChat()">
+            <span class="action-icon">💳</span>My Cards
+          </button>
+          <button class="action-btn" onclick="openChat()">
+            <span class="action-icon">📄</span>Tax Docs
+          </button>
+          <button class="action-btn aspen" onclick="openChat()" style="grid-column:span 2">
+            <span class="action-icon">🌲</span>Chat with Aspen
+          </button>
+        </div>
+      </div>
+
+      <div class="aspen-promo">
+        <h3>🌲 Meet Aspen</h3>
+        <p>Your AI banking assistant. Ask about balances, transactions, card replacements — or request a secure screen view of your accounts.</p>
+        <button class="aspen-btn" onclick="openChat()">💬 Chat with Aspen</button>
+      </div>
+
+      <div class="call-panel">
+        <h3>📞 Voice Banking</h3>
+        <p>Speak directly with Aspen via your browser — no app or phone number needed. Your microphone is used only during the call.</p>
+        <button class="call-panel-btn" onclick="startVoiceCall()">📞 Start a voice call</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <strong>AlpineBank AG</strong> &nbsp;·&nbsp; Bahnhofstrasse 12, 8001 Zürich &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp;
+  <span style="color:rgba(255,255,255,0.25)">Demo environment — not a real bank</span>
+</footer>
+
+<!-- COGNIGY WEBRTC VOICE WIDGET — Click-to-Call for submission -->
+<script src="https://github.com/Cognigy/WebRTCWidget/releases/latest/download/webRTCWidget.js"></script>
+<script>
+var VG_WS_URL = "wss://cognigy-endpoint-au1.nicecxone.com/05d5dd8d615d3e32a0e59d22dff4b0ef8f7f68811378a84f855e8fb06657dc92/voiceGateway";
+var vgInitialised = false;
+
+function startVoiceCall() {
+  if (window.initWebRTCWidget) {
+    if (!vgInitialised) {
+      window.initWebRTCWidget(VG_WS_URL);
+      vgInitialised = true;
+    }
+  } else {
+    alert("Voice widget is still loading — please try again in a moment.");
+  }
+}
+</script>
+
+<!-- COGNIGY WEBCHAT -->
+<script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"></script>
+<script>
+var WEBCHAT_CONFIG_URL = "https://cognigy-endpoint-au1.nicecxone.com/69602282bc2cb5a540d67390a229c92d0197eaffb43792ef6e4abd815b74930d";
+
+function openChat() {
+  if (window.cognigyWebchat) {
+    window.cognigyWebchat.open();
+  }
+}
+
+window.addEventListener("load", function () {
+  if (!window.cognigyWebchat) {
+    console.warn("Cognigy webchat script not loaded — check network access.");
+    return;
+  }
+  window.cognigyWebchat.init({
+    configUrl: WEBCHAT_CONFIG_URL,
+    settings: {
+      layout: {
+        title: "Aspen — AlpineBank Assistant",
+        colors: { primaryColor: "#2d7a3a" }
+      },
+      behavior: {
+        enableTypingIndicator: true
+      }
+    }
+  });
+});
+</script>
+
+</body>
+</html>
