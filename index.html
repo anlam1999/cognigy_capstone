@@ -527,50 +527,71 @@ nav{background:var(--forest);color:#fff;position:sticky;top:0;z-index:200;paddin
   </div>
 </footer>
 
-<!-- COGNIGY WEBCHAT -->
+<!-- COGNIGY WEBCHAT + WEBRTC -->
 <script>
-(function(){
-  var s = document.createElement('script');
-  s.src = 'https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js';
-  s.onload = initWebchat;
-  s.onerror = function(){ console.warn('Webchat script failed to load'); };
-  document.head.appendChild(s);
-})();
-
 var WEBCHAT_URL = "https://cognigy-endpoint-au1.nicecxone.com/69602282bc2cb5a540d67390a229c92d0197eaffb43792ef6e4abd815b74930d";
+var VG_WS_URL   = "wss://cognigy-endpoint-au1.nicecxone.com/05d5dd8d615d3e32a0e59d22dff4b0ef8f7f68811378a84f855e8fb06657dc92/voiceGateway";
 
-function initWebchat(){
-  if(!window.cognigyWebchat) return;
+var CHAT_URLS = [
+  'https://cognigy-webchat-aus1.cognigy.ai/webchat/webchat.js',
+  'https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js'
+];
+var VG_URLS = [
+  'https://cognigy-webchat-aus1.cognigy.ai/webchat/webRTCWidget.js',
+  'https://github.com/Cognigy/WebRTCWidget/releases/latest/download/webRTCWidget.js'
+];
+
+function loadScript(urls, onSuccess, onFail) {
+  var i = 0;
+  function tryNext() {
+    if (i >= urls.length) { if (onFail) onFail(); return; }
+    var s = document.createElement('script');
+    s.src = urls[i++];
+    s.onload = function() { if (onSuccess) onSuccess(); };
+    s.onerror = tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
+}
+
+function initWebchat() {
+  if (!window.cognigyWebchat) return;
   window.cognigyWebchat.init({
     configUrl: WEBCHAT_URL,
-    settings:{
-      layout:{ title:"Aspen — AlpineBank", colors:{ primaryColor:"#2d7a3a" } },
-      behavior:{ enableTypingIndicator:true }
+    settings: {
+      layout:   { title: "Aspen — AlpineBank", colors: { primaryColor: "#2d7a3a" } },
+      behavior: { enableTypingIndicator: true }
     }
   });
 }
 
-function openChat(){
-  if(window.cognigyWebchat && window.cognigyWebchat.open){ window.cognigyWebchat.open(); }
-  else{ alert("Chat is loading — please try again in a moment."); }
-}
+loadScript(CHAT_URLS, initWebchat, function() {
+  console.warn('Webchat failed to load from all sources');
+});
 
-function toggleAspen(){
-  document.getElementById('aspenSidebar').classList.toggle('hidden');
-}
-</script>
-
-<!-- COGNIGY WEBRTC -->
-<script src="https://github.com/Cognigy/WebRTCWidget/releases/latest/download/webRTCWidget.js" onerror="console.warn('WebRTC widget failed to load')"></script>
-<script>
-var VG_WS_URL = "wss://cognigy-endpoint-au1.nicecxone.com/05d5dd8d615d3e32a0e59d22dff4b0ef8f7f68811378a84f855e8fb06657dc92/voiceGateway";
 var vgInitialised = false;
-function startVoiceCall(){
-  if(window.initWebRTCWidget){
-    if(!vgInitialised){ window.initWebRTCWidget(VG_WS_URL); vgInitialised=true; }
+loadScript(VG_URLS, null, function() {
+  console.warn('WebRTC widget failed to load from all sources');
+});
+
+function openChat() {
+  if (window.cognigyWebchat && window.cognigyWebchat.open) {
+    window.cognigyWebchat.open();
   } else {
-    document.getElementById('voice-error').style.display='block';
+    alert("Chat widget is still loading — please wait a moment and try again.");
   }
+}
+
+function startVoiceCall() {
+  if (window.initWebRTCWidget) {
+    if (!vgInitialised) { window.initWebRTCWidget(VG_WS_URL); vgInitialised = true; }
+  } else {
+    document.getElementById('voice-error').style.display = 'block';
+  }
+}
+
+function toggleAspen() {
+  document.getElementById('aspenSidebar').classList.toggle('hidden');
 }
 </script>
 </body>
