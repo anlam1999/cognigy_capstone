@@ -41,16 +41,20 @@ footer{background:var(--pine2);color:#c7d6ce;padding:42px 5vw 28px}.footer-grid{
 <script>
 var WEBCHAT_CONFIG_URL="https://cognigy-endpoint-au1.nicecxone.com/69602282bc2cb5a540d67390a229c92d0197eaffb43792ef6e4abd815b74930d";
 var VG_ENDPOINT_URL="https://cognigy-endpoint-au1.nicecxone.com/05d5dd8d615d3e32a0e59d22dff4b0ef8f7f68811378a84f855e8fb06657dc92";
-var CHAT_URLS=['https://unpkg.com/@cognigy/webchat/dist/webchat.umd.js','https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js'];
-var VG_URLS=['https://github.com/Cognigy/click-to-call-widget/releases/latest/download/webRTCWidget.js'];
+// Cognigy hosts Webchat v3 for the AU1 instance with a JavaScript content type; GitHub release links are served as
+// application/octet-stream + nosniff, which Chrome/Edge refuse to execute.
+var CHAT_URLS=['https://cognigy-webchat-au1.nicecxone.com/build/webchat3.js'];
+// The click-to-call widget is only published as a GitHub release asset, so a local copy is served from /vendor.
+var VG_URLS=['vendor/webRTCWidget.js'];
 var webchatInstance=null,vgInitialised=false;
 function statusMessage(message){document.getElementById('aspenStatus').textContent=message||''}
 function loadScript(urls,onSuccess,onFail){var i=0;function next(){if(i>=urls.length){if(onFail)onFail();return}var s=document.createElement('script');s.src=urls[i++];s.onload=function(){if(onSuccess)onSuccess()};s.onerror=next;document.head.appendChild(s)}next()}
-loadScript(CHAT_URLS,function(){if(typeof initWebchat==='function'){initWebchat(WEBCHAT_CONFIG_URL).then(function(wc){webchatInstance=wc;statusMessage('')}).catch(function(){statusMessage('Chat could not be initialised.')})}},function(){statusMessage('Chat is currently unavailable.')});
+// disableToggleButton hides Webchat's own floating launcher, which otherwise sits on top of the "Ask Aspen" button
+loadScript(CHAT_URLS,function(){if(typeof initWebchat==='function'){initWebchat(WEBCHAT_CONFIG_URL,{settings:{widgetSettings:{disableToggleButton:true}}}).then(function(wc){webchatInstance=wc;statusMessage('')}).catch(function(){statusMessage('Chat could not be initialised.')})}},function(){statusMessage('Chat is currently unavailable.')});
 loadScript(VG_URLS,null,function(){statusMessage('Voice calling is currently unavailable.')});
 function toggleAspen(force){var panel=document.getElementById('aspenPanel');var shouldOpen=typeof force==='boolean'?force:!panel.classList.contains('open');panel.classList.toggle('open',shouldOpen);panel.setAttribute('aria-hidden',String(!shouldOpen));if(shouldOpen)panel.querySelector('.close').focus()}
-function openChat(){statusMessage('');if(webchatInstance&&typeof webchatInstance.open==='function'){webchatInstance.open()}else{statusMessage('Chat is still loading. Please try again in a moment.')}}
-function startVoiceCall(){statusMessage('');if(window.initWebRTCWidget){if(!vgInitialised){window.initWebRTCWidget(VG_ENDPOINT_URL);vgInitialised=true}statusMessage('Voice controls are opening. Allow microphone access if prompted.')}else{statusMessage('Voice calling is still loading. Please try again in a moment.')}}
+function openChat(){statusMessage('');if(webchatInstance&&typeof webchatInstance.open==='function'){toggleAspen(false);webchatInstance.open()}else{statusMessage('Chat is still loading. Please try again in a moment.')}}
+function startVoiceCall(){statusMessage('');if(!window.isSecureContext){statusMessage('Calling needs the page to be served over https or localhost (microphone access).');return}if(window.initWebRTCWidget){if(!vgInitialised){window.initWebRTCWidget(VG_ENDPOINT_URL,{});vgInitialised=true}toggleAspen(false)}else{statusMessage('Voice calling is still loading. Please try again in a moment.')}}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')toggleAspen(false)});
 </script>
 </body>
