@@ -101,7 +101,18 @@ function startVoiceCall(){
     }
     document.body.classList.add('voice-active');
     toggleAspen(false);
+    dialWhenReady();
   });
+}
+// The widget exposes no "start call" API, so press its own "Start a call" button once it has rendered.
+function dialWhenReady(){
+  var tries=0;
+  (function poll(){
+    var root=document.getElementById('aspenVoiceWidget')||document;
+    var btn=root.querySelector('[aria-label="Start a call"]');
+    if(btn){btn.click();return}
+    if(++tries<40)setTimeout(poll,250);
+  })();
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape')toggleAspen(false)});
 </script>
