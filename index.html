@@ -53,7 +53,7 @@ var VG_ENDPOINT_URL="https://cognigy-endpoint-au1.nicecxone.com/05d5dd8d615d3e32
 // application/octet-stream + nosniff, which Chrome/Edge refuse to execute.
 var CHAT_URLS=['https://cognigy-webchat-au1.nicecxone.com/build/webchat3.js'];
 // The click-to-call widget is only published as a GitHub release asset, so a local copy is served from /vendor.
-var VG_URLS=['vendor/webRTCWidget.js'];
+var VG_URLS=['vendor/webRTCWidget.js','webRTCWidget.js'];
 var webchatInstance=null,vgInitialised=false;
 function statusMessage(message){document.getElementById('aspenStatus').textContent=message||''}
 function loadScript(urls,onSuccess,onFail){var i=0;function next(){if(i>=urls.length){if(onFail)onFail();return}var s=document.createElement('script');s.src=urls[i++];s.onload=function(){if(onSuccess)onSuccess()};s.onerror=next;document.head.appendChild(s)}next()}
@@ -66,12 +66,17 @@ function loadVoiceWidget(cb){
   vgWaiting.push(cb);
   if(vgState==='loading')return;
   vgState='loading';
-  var s=document.createElement('script');s.src=VG_URLS[0];
   function finish(ok,msg){vgState=ok?'ready':'failed';if(msg)statusMessage(msg);var w=vgWaiting;vgWaiting=[];w.forEach(function(f){f(ok)})}
-  // A host that answers a missing file with an HTML page still fires onload, so check the function actually exists.
-  s.onload=function(){if(typeof window.initWebRTCWidget==='function')finish(true);else finish(false,'The voice widget file loaded but did not start. Check that vendor/webRTCWidget.js is deployed next to this page and see the browser console.')};
-  s.onerror=function(){finish(false,'Could not load vendor/webRTCWidget.js. Make sure the vendor folder is deployed next to this page.')};
-  document.head.appendChild(s);
+  var i=0;
+  function tryNext(){
+    if(i>=VG_URLS.length){finish(false,'Could not load the voice widget. Upload webRTCWidget.js next to index.html (or in a vendor folder).');return}
+    var s=document.createElement('script');s.src=VG_URLS[i++];
+    // A host that answers a missing file with an HTML page still fires onload, so check the function actually exists.
+    s.onload=function(){if(typeof window.initWebRTCWidget==='function')finish(true);else tryNext()};
+    s.onerror=tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
 }
 loadVoiceWidget(function(){});
 function toggleAspen(force){var panel=document.getElementById('aspenPanel');var shouldOpen=typeof force==='boolean'?force:!panel.classList.contains('open');panel.classList.toggle('open',shouldOpen);panel.setAttribute('aria-hidden',String(!shouldOpen));if(shouldOpen)panel.querySelector('.close').focus()}
