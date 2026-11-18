@@ -24,6 +24,8 @@ html:root{--webchat-font-family:Inter,system-ui,sans-serif;--cc-bubble-border-ra
 --webrtc-bubble-user-bg:#dfeee5;--webrtc-bubble-user-text:#10231a;--webrtc-bubble-bot-bg:#f6f3eb;--webrtc-bubble-bot-text:#10231a;
 --webrtc-avatar-bg-color:#dfeee5;--webrtc-button-bg:#123b2a;--webrtc-button-hover-bg:#0a2a1d;--webrtc-transcript-bg-color:#f6f3eb;
 --webrtc-powered-by-color:#617067;--webrtc-powered-by-link-color:#2f7d54}
+/* During a call the voice widget owns the bottom-right corner; the header/hero buttons still open Aspen */
+.voice-active .aspen-launch{display:none}
 @media(max-width:900px){.hero-grid,.security{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(2,1fr)}.products{grid-template-columns:1fr}.navlinks{display:none}.trustbar{margin:0;border-radius:0;grid-template-columns:1fr}.trustitem{border-right:0;border-bottom:1px solid var(--line)}.footer-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.topline{display:none}.navright .btn-secondary{display:none}.hero{padding:55px 22px 68px}.section{padding:52px 18px}.quick-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.section-head{display:block}.channel{grid-template-columns:1fr}.aspen-panel{right:14px;bottom:88px}}
 </style>
@@ -89,7 +91,15 @@ function startVoiceCall(){
   loadVoiceWidget(function(ok){
     if(!ok)return;
     statusMessage('');
-    if(!vgInitialised){vgInitialised=true;window.initWebRTCWidget(VG_ENDPOINT_URL,{})}
+    if(!vgInitialised){
+      vgInitialised=true;
+      window.initWebRTCWidget(VG_ENDPOINT_URL,{});
+      // The widget appends a plain <div> to <body> synchronously and only uses z-index 1-3 inside it,
+      // so lift its container above the sticky nav (50) and the Aspen launcher (100).
+      var c=document.body.lastElementChild;
+      if(c&&c.tagName==='DIV'){c.id='aspenVoiceWidget';c.style.position='relative';c.style.zIndex='1000'}
+    }
+    document.body.classList.add('voice-active');
     toggleAspen(false);
   });
 }
