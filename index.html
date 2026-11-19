@@ -84,28 +84,39 @@ function loadVoiceWidget(cb){
   }
   tryNext();
 }
-loadVoiceWidget(function(){});
+// Render the call widget (hidden) as soon as the page loads, so a tap on "Call Aspen" can press its call
+// button synchronously. Browsers (especially on phones) only allow audio playback during a user tap; dialling
+// after an async load lost that permission and muted Aspen's greeting.
+function initVoiceWidget(){
+  if(vgInitialised||typeof window.initWebRTCWidget!=='function')return;
+  vgInitialised=true;
+  window.initWebRTCWidget(VG_ENDPOINT_URL,{});
+  // The widget appends a plain <div> to <body> synchronously; move it into the Aspen panel.
+  var c=document.body.lastElementChild;
+  var slot=document.getElementById('aspenVoiceSlot');
+  if(c&&c.tagName==='DIV'){c.id='aspenVoiceWidget';if(slot)slot.appendChild(c)}
+}
+function findStartButton(){
+  var root=document.getElementById('aspenVoiceWidget')||document;
+  return root.querySelector('[aria-label="Start a call"]');
+}
+if(window.isSecureContext&&location.protocol!=='file:'){loadVoiceWidget(function(ok){if(ok)initVoiceWidget()})}
 function toggleAspen(force){var panel=document.getElementById('aspenPanel');var shouldOpen=typeof force==='boolean'?force:!panel.classList.contains('open');panel.classList.toggle('open',shouldOpen);panel.setAttribute('aria-hidden',String(!shouldOpen));if(shouldOpen)panel.querySelector('.close').focus()}
 function openChat(){statusMessage('');if(webchatInstance&&typeof webchatInstance.open==='function'){toggleAspen(false);webchatInstance.open()}else{statusMessage('Chat is still loading. Please try again in a moment.')}}
 function startVoiceCall(){
   statusMessage('');
   if(!window.isSecureContext){statusMessage('Calling needs the page to be opened over https or http://localhost (microphone access).');return}
   if(location.protocol==='file:'){statusMessage('Open this page through a local web server (http://localhost) rather than as a file, so the voice widget can reach Cognigy.');return}
+  document.body.classList.add('voice-active');
+  toggleAspen(true);
+  // Fast path: widget already rendered, so press its call button inside this same tap (keeps audio allowed).
+  var btn=findStartButton();
+  if(btn){btn.click();return}
   if(vgState!=='ready')statusMessage('Loading voice calling…');
   loadVoiceWidget(function(ok){
     if(!ok)return;
     statusMessage('');
-    if(!vgInitialised){
-      vgInitialised=true;
-      window.initWebRTCWidget(VG_ENDPOINT_URL,{});
-      // The widget appends a plain <div> to <body> synchronously; move it into the Aspen panel so the call
-      // shows inside the panel instead of floating over the page.
-      var c=document.body.lastElementChild;
-      var slot=document.getElementById('aspenVoiceSlot');
-      if(c&&c.tagName==='DIV'){c.id='aspenVoiceWidget';if(slot)slot.appendChild(c)}
-    }
-    document.body.classList.add('voice-active');
-    toggleAspen(true);
+    initVoiceWidget();
     dialWhenReady();
   });
 }
@@ -113,8 +124,7 @@ function startVoiceCall(){
 function dialWhenReady(){
   var tries=0;
   (function poll(){
-    var root=document.getElementById('aspenVoiceWidget')||document;
-    var btn=root.querySelector('[aria-label="Start a call"]');
+    var btn=findStartButton();
     if(btn){btn.click();return}
     if(++tries<40)setTimeout(poll,250);
   })();
