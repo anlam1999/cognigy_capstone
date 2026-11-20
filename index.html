@@ -116,6 +116,9 @@ function loadVoiceWidget(cb){
 function initVoiceWidget(){
   if(vgInitialised||typeof window.initWebRTCWidget!=='function')return;
   vgInitialised=true;
+  // The widget takes its caller ID from this storage slot (its endpoint settings blank out the userId option),
+  // so put this visit's ID there first: the call and the secure-screen lookup then use the same ID.
+  try{var wo=JSON.parse(localStorage.getItem('cognigy-webrtc-options')||'{}')||{};wo.userId=PAGE_CALLER_ID;localStorage.setItem('cognigy-webrtc-options',JSON.stringify(wo))}catch(e){}
   window.initWebRTCWidget(VG_ENDPOINT_URL,{userId:PAGE_CALLER_ID});
   // The widget appends a plain <div> to <body> synchronously; move it into the Aspen panel.
   var c=document.body.lastElementChild;
@@ -171,9 +174,14 @@ function showScreen(url){
   if(panel&&panel.scrollIntoView)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function hideScreen(){document.body.classList.remove('screen-ready')}
+function callerId(){ // the ID the call widget actually used (falls back to this visit's ID)
+  try{var wo=JSON.parse(localStorage.getItem('cognigy-webrtc-options')||'{}');if(wo&&wo.userId)return wo.userId}catch(e){}
+  return PAGE_CALLER_ID;
+}
 function lookupScreen(){
+  var id=callerId();
   fetch(SCREEN_LOOKUP_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({userId:PAGE_CALLER_ID,sessionId:'screen-'+PAGE_CALLER_ID,text:'',data:{type:'screenLookup'}})})
+    body:JSON.stringify({userId:id,sessionId:'screen-'+id,text:'',data:{type:'screenLookup'}})})
     .then(function(r){return r.ok?r.json():null})
     .then(function(d){
       var url=null;((d&&d.outputStack)||[]).forEach(function(o){if(o&&o.data&&o.data.screenUrl)url=o.data.screenUrl});
