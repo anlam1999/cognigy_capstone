@@ -165,9 +165,12 @@ function dialWhenReady(){
 // Cognigy for it in the background and opens the screen under the call. No code is ever spoken or shown.
 var SCREEN_LOOKUP_URL='https://cognigy-endpoint-au1.nicecxone.com/dd6cf2ff6792455ec2d04dfb3cb3c267017d6d9f109d1832b968b40ca9e3d2f3';
 var screenTimer=null, screenTries=0, screenUrlShown=null, screenUrlPrevCall=null;
+var screenUrlLoaded=null;
 function showScreen(url){
   var xf=document.getElementById('xappFrame');
-  if(xf&&url&&xf.src!==url)xf.src=url;
+  // Load each screen link once only (comparing with xf.src never matches the browser's normalised URL,
+  // which reloaded the screen in a loop)
+  if(xf&&url&&url!==screenUrlLoaded){screenUrlLoaded=url;xf.src=url}
   screenUrlShown=url;
   document.body.classList.add('screen-ready');
   var panel=document.getElementById('xappPanel');
@@ -200,7 +203,7 @@ window.addEventListener('message',function(e){
   if(!/^https:\/\/cognigy-(static|apps)-au1\.nicecxone\.com$/.test(e.origin)&&e.origin!=='null')return;
   var m=e.data&&e.data.aspenScreen;
   if(m==='close')setTimeout(hideScreen,400);
-  else if(m==='open'&&screenUrlShown)showScreen(screenUrlShown);
+  else if(m==='open'&&screenUrlShown)document.body.classList.add('screen-ready'); // just reveal; never reload
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape')toggleAspen(false)});
 // Cookie banner: the choice is a per-visitor convenience, so storage failures just mean the banner shows again.
