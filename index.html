@@ -48,7 +48,7 @@ html:root{--webchat-font-family:Inter,system-ui,sans-serif;--cc-bubble-border-ra
 #aspenVoiceSlot .webrtc_widget_container{width:100%}
 /* xApp code-entry panel (shown during a call): callers type the screen code Aspen reads out */
 .xapp-panel{display:none;margin-top:14px;border:1px solid var(--line);border-radius:13px;padding:14px;background:#f8fbf9}
-.voice-active .xapp-panel{display:block}.xapp-panel .cap-title{margin-top:0}.xapp-panel p{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.screen-ready .xapp-panel{display:block}.screen-manual{display:none;margin-top:10px;background:none;border:0;padding:0;font:inherit;font-size:12px;color:var(--green);font-weight:700;text-decoration:underline;cursor:pointer}.voice-active:not(.screen-ready) .screen-manual{display:inline-block}.xapp-panel .cap-title{margin-top:0}.xapp-panel p{font-size:12.5px;color:var(--muted);margin:0 0 10px}
 .xapp-panel iframe{width:100%;height:420px;border:1px solid var(--line);border-radius:10px;background:white}.xapp-panel a{display:inline-block;margin-top:8px;font-size:12px;color:var(--green);font-weight:700}
 @media(max-width:900px){.hero-grid,.security{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(2,1fr)}.products{grid-template-columns:1fr}.navlinks{display:none}.trustbar{margin:0;border-radius:0;grid-template-columns:1fr}.trustitem{border-right:0;border-bottom:1px solid var(--line)}.footer-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.topline{display:none}.navright .btn-secondary{display:none}.hero{padding:55px 22px 68px}.section{padding:52px 18px}.quick-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.section-head{display:block}.channel{grid-template-columns:1fr}.aspen-panel{right:14px;bottom:88px}}
@@ -76,7 +76,7 @@ html:root{--webchat-font-family:Inter,system-ui,sans-serif;--cc-bubble-border-ra
 <div class="footer-meta">© 2026 AlpenBank AG · Registered office: Maximilianstraße 21, 80539 München, Germany · Austrian head office: Kärntner Straße 25, 1010 Wien, Austria. Deposits are protected by the statutory deposit guarantee scheme up to €100,000 per customer.<br><b>Demo environment only.</b> AlpenBank AG is a fictitious institution created for a capstone project. Names, branches, phone numbers, fees and figures are illustrative.</div></footer>
 <div class="cookie" id="cookieBanner" role="dialog" aria-label="Cookie consent"><b>We value your privacy</b><p>We use essential cookies to make this site work, and optional analytics cookies to improve it. You can change your choice at any time under Cookie settings.</p><div class="row"><button class="btn btn-primary" type="button" onclick="setCookies('all')">Accept all</button><button class="btn btn-secondary" type="button" onclick="setCookies('essential')">Essential only</button></div></div>
 <button class="aspen-launch" id="aspenLaunch" type="button" onclick="toggleAspen()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>Ask Aspen</button>
-<aside class="aspen-panel" id="aspenPanel" aria-label="Aspen secure banking assistant" aria-hidden="true"><div class="aspen-head"><div class="aspen-title"><div class="aspen-avatar"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 25 L12.5 10 L17.5 17.5 L21.5 12.5 L29 25 Z" fill="#123b2a"/><path d="M12.5 10 L15 14 L12.5 13 L10.2 13.7 Z" fill="#dfeee5"/></svg></div><div><h3>Aspen</h3><p>Secure banking assistant · English & German</p></div></div><button class="close" type="button" aria-label="Close Aspen panel" onclick="toggleAspen(false)">×</button></div><div class="aspen-body"><div class="secure-note">Aspen can answer general questions immediately. Identity verification may be required before account-specific information is displayed.</div><div class="cap-title">Aspen can help with</div><div class="chips"><span class="chip">Account balances</span><span class="chip">Recent transactions</span><span class="chip">Tax documents</span><span class="chip">Card replacement</span><span class="chip">Branches & FAQs</span><span class="chip">Specialist support</span></div><div class="cap-title">Choose a channel</div><div class="channel"><button type="button" onclick="openChat()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--pine)"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg><b>Secure chat</b><small>Message Aspen in English or German</small></button><button type="button" onclick="startVoiceCall()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--pine)"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><b>Call Aspen</b><small>Speak to Aspen from your browser</small></button></div><div class="aspen-status" id="aspenStatus" aria-live="polite"></div><div class="voice-slot" id="aspenVoiceSlot" aria-label="Call with Aspen"></div><div class="xapp-panel" id="xappPanel"><div class="cap-title">Secure screen</div><p>After Aspen sends your SMS code she will read out a short <strong>screen code</strong> (for example "K as in Kilo"). Enter it below, then you can type your SMS code privately instead of saying it. Your accounts appear here once you're verified. <span lang="de">Bildschirmcode von Aspen hier eingeben.</span></p><iframe id="xappFrame" title="Secure screen" data-src="https://cognigy-static-au1.nicecxone.com/" allow="clipboard-write"></iframe><a href="https://cognigy-static-au1.nicecxone.com/" target="_blank" rel="noopener">Open in a new tab</a></div><div class="aspen-disclaimer">To block a lost or stolen card immediately, call the 24/7 hotline: Germany +49 800 2536 7000 · Austria +43 800 2536 7000.</div></div></aside>
+<aside class="aspen-panel" id="aspenPanel" aria-label="Aspen secure banking assistant" aria-hidden="true"><div class="aspen-head"><div class="aspen-title"><div class="aspen-avatar"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 25 L12.5 10 L17.5 17.5 L21.5 12.5 L29 25 Z" fill="#123b2a"/><path d="M12.5 10 L15 14 L12.5 13 L10.2 13.7 Z" fill="#dfeee5"/></svg></div><div><h3>Aspen</h3><p>Secure banking assistant · English & German</p></div></div><button class="close" type="button" aria-label="Close Aspen panel" onclick="toggleAspen(false)">×</button></div><div class="aspen-body"><div class="secure-note">Aspen can answer general questions immediately. Identity verification may be required before account-specific information is displayed.</div><div class="cap-title">Aspen can help with</div><div class="chips"><span class="chip">Account balances</span><span class="chip">Recent transactions</span><span class="chip">Tax documents</span><span class="chip">Card replacement</span><span class="chip">Branches & FAQs</span><span class="chip">Specialist support</span></div><div class="cap-title">Choose a channel</div><div class="channel"><button type="button" onclick="openChat()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--pine)"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg><b>Secure chat</b><small>Message Aspen in English or German</small></button><button type="button" onclick="startVoiceCall()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:var(--pine)"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><b>Call Aspen</b><small>Speak to Aspen from your browser</small></button></div><div class="aspen-status" id="aspenStatus" aria-live="polite"></div><div class="voice-slot" id="aspenVoiceSlot" aria-label="Call with Aspen"></div><button type="button" class="screen-manual" onclick="openScreenManually()">Aspen gave me a screen code</button><div class="xapp-panel" id="xappPanel"><div class="cap-title">Secure screen</div><p id="xappHint">Type the code from your SMS here. Your accounts appear here once you're verified. <span lang="de">Geben Sie hier den Code aus Ihrer SMS ein.</span></p><iframe id="xappFrame" title="Secure screen" allow="clipboard-write"></iframe><a id="xappTab" href="https://cognigy-static-au1.nicecxone.com/" target="_blank" rel="noopener">Open in a new tab</a></div><div class="aspen-disclaimer">To block a lost or stolen card immediately, call the 24/7 hotline: Germany +49 800 2536 7000 · Austria +43 800 2536 7000.</div></div></aside>
 <script>
 var WEBCHAT_CONFIG_URL="https://cognigy-endpoint-au1.nicecxone.com/69602282bc2cb5a540d67390a229c92d0197eaffb43792ef6e4abd815b74930d";
 var VG_ENDPOINT_URL="https://cognigy-endpoint-au1.nicecxone.com/05d5dd8d615d3e32a0e59d22dff4b0ef8f7f68811378a84f855e8fb06657dc92";
@@ -134,9 +134,7 @@ function startVoiceCall(){
   if(location.protocol==='file:'){statusMessage('Open this page through a local web server (http://localhost) rather than as a file, so the voice widget can reach Cognigy.');return}
   document.body.classList.add('voice-active');
   toggleAspen(true);
-  // Load the xApp code-entry page only once a call starts
-  var xf=document.getElementById('xappFrame');
-  if(xf&&!xf.src)xf.src=xf.getAttribute('data-src');
+  watchTranscriptForScreenCode();
   // Fast path: widget already rendered, so press its call button inside this same tap (keeps audio allowed).
   var btn=findStartButton();
   if(btn){btn.click();return}
@@ -157,6 +155,48 @@ function dialWhenReady(){
     if(++tries<40)setTimeout(poll,250);
   })();
 }
+
+// Secure screen (xApp). After sending the SMS, Aspen says "Your secure screen code is X X X X X X".
+// The call widget shows that sentence in its live transcript on this page, so we read the code from it,
+// exchange it for the screen session with Cognigy's xApp service, and open the SMS-code keypad here —
+// the caller never has to type the screen code.
+var XAPP_STATIC='https://cognigy-static-au1.nicecxone.com/';
+var XAPP_PIN_API='https://cognigy-apps-au1.nicecxone.com/api/v1.0/pin/validate';
+var screenPin=null, screenObserver=null;
+var SCREEN_CODE_RE=/(?:screen code is|Bildschirmcode lautet)\s*:?\s*((?:[A-Za-z0-9][\s,.–-]*){6})/i;
+function showScreen(url){
+  var xf=document.getElementById('xappFrame');
+  if(xf&&xf.src!==url)xf.src=url;
+  var tab=document.getElementById('xappTab'); if(tab)tab.href=url;
+  document.body.classList.add('screen-ready');
+  var panel=document.getElementById('xappPanel');
+  if(panel&&panel.scrollIntoView)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function openScreenFromPin(pin){
+  if(!pin||pin===screenPin)return;
+  screenPin=pin;
+  fetch(XAPP_PIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:pin})})
+    .then(function(r){if(!r.ok)throw new Error('pin '+r.status);return r.json()})
+    .then(function(d){if(!d||!d.appSessionToken)throw new Error('no token');showScreen(XAPP_STATIC+'?token='+encodeURIComponent(d.appSessionToken))})
+    .catch(function(){screenPin=null;openScreenManually()});
+}
+function scanTranscript(){
+  var slot=document.getElementById('aspenVoiceSlot'); if(!slot)return;
+  var m=SCREEN_CODE_RE.exec(slot.textContent||''); 
+  var bubbles=slot.querySelectorAll('.webrtc_transcript_bubble');
+  for(var i=bubbles.length-1;i>=0;i--){var mm=SCREEN_CODE_RE.exec(bubbles[i].textContent||'');if(mm){m=mm;break}}
+  if(!m)return;
+  var pin=m[1].replace(/[^A-Za-z0-9]/g,'').slice(0,6).toLowerCase();
+  if(pin.length===6)openScreenFromPin(pin);
+}
+function watchTranscriptForScreenCode(){
+  var slot=document.getElementById('aspenVoiceSlot');
+  if(!slot||screenObserver||!window.MutationObserver)return;
+  screenObserver=new MutationObserver(function(){scanTranscript()});
+  screenObserver.observe(slot,{childList:true,subtree:true,characterData:true});
+}
+// Fallback: the caller types the screen code themselves on Cognigy's code page
+function openScreenManually(){showScreen(XAPP_STATIC)}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')toggleAspen(false)});
 // Cookie banner: the choice is a per-visitor convenience, so storage failures just mean the banner shows again.
 function showCookies(){document.getElementById('cookieBanner').classList.add('show')}
